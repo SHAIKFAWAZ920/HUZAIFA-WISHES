@@ -1,0 +1,99 @@
+@import "tailwindcss";
+
+.font-serif-cormorant {
+  font-family: 'Cormorant Garamond', serif;
+}
+.font-serif-playfair {
+  font-family: 'Playfair Display', serif;
+}
+.font-script-vibes {
+  font-family: 'Great Vibes', cursive;
+}
+.font-script-sacramento {
+  font-family: 'Sacramento', cursive;
+}
+.font-script-dancing {
+  font-family: 'Dancing Script', cursive;
+}
+.font-sans-poppins {
+  font-family: 'Poppins', sans-serif;
+}
+
+/* Custom Animations */
+@keyframes heartPulse {
+  0%, 100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 15px rgba(244, 114, 182, 0.6));
+  }
+  50% {
+    transform: scale(1.08);
+    filter: drop-shadow(0 0 28px rgba(236, 72, 153, 0.85));
+  }
+}
+
+@keyframes candleFlicker {
+  0%, 100% {
+    transform: scale(1) rotate(-1deg);
+    opacity: 0.95;
+  }
+  25% {
+    transform: scale(1.05) rotate(1deg);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(0.98) rotate(-0.5deg);
+    opacity: 0.88;
+  }
+  75% {
+    transform: scale(1.03) rotate(0.5deg);
+    opacity: 0.98;
+  }
+}
+
+@keyframes floatSway {
+  0%, 100% {
+    transform: translateY(0px) rotate(-2deg);
+  }
+  50% {
+    transform: translateY(-12px) rotate(2deg);
+  }
+}
+
+.animate-heart-pulse {
+  animation: heartPulse 2.4s ease-in-out infinite;
+}
+
+.animate-flame-flicker {
+  animation: candleFlicker 0.4s ease-in-out infinite alternate;
+}
+
+.animate-float-sway {
+  animation: floatSway 4s ease-in-out infinite;
+}
+
+/* Glassmorphism Card Style */
+.glass-card {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+.glass-card-gold {
+  background: rgba(255, 215, 0, 0.04);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  box-shadow: 0 0 20px rgba(245, 158, 11, 0.15);
+}
+
+/* Hide scrollbars globally */
+::-webkit-scrollbar {
+  display: none;
+}
+* {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  touch-action: manipulation;
+}
