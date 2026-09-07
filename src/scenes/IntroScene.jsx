@@ -54,7 +54,7 @@ export function IntroScene({ onNext, config }) {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, delay: 0.4 }}
-        className="z-30 self-start ml-2 mb-2"
+        className="z-30 self-center mb-6 flex flex-col items-center"
       >
         <BowAndArrow isShot={isShot} onReleaseArrow={handleTrigger} />
       </motion.div>

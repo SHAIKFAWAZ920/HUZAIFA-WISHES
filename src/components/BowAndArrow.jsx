@@ -46,7 +46,7 @@ export function BowAndArrow({ isShot: isShotProp, onReleaseArrow }) {
       onTouchMove={handlePointerMove}
       onTouchEnd={handlePointerUp}
     >
-      {/* Strict fixed dimensions box rotated at -62 degrees directly towards heart center */}
+      {/* Strict fixed dimensions box rotated at -90 degrees directly towards heart center */}
       <div
         style={{
           width: '112px',
@@ -55,7 +55,7 @@ export function BowAndArrow({ isShot: isShotProp, onReleaseArrow }) {
           minHeight: '112px',
           maxWidth: '112px',
           maxHeight: '112px',
-          transform: 'rotate(-62deg)',
+          transform: 'rotate(-90deg)',
           transformOrigin: 'center'
         }}
         className="relative flex items-center justify-center overflow-visible z-30"
