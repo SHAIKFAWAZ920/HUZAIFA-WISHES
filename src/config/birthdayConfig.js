@@ -1,7 +1,7 @@
 export const birthdayConfig = {
-  name: "Uzma",
+  name: "Sana",
   age: 14,
-  sender: "Huzaifa",
+  sender: "Umar",
 
   audio: {
     bgm: "/audio/birthday.mp3",
@@ -22,14 +22,14 @@ export const birthdayConfig = {
   tree: {
     topText: "it's officially your day",
     title: "Happy Birthday,",
-    name: "Uzma",
+    name: "Sana",
     subtitle: "and just like that, you're turning 14 ✨",
     tapInstruction: "tap anywhere to continue"
   },
 
   cake: {
     topText: "First things first 🎂",
-    title: "Happy Birthday, Uzma!",
+    title: "Happy Birthday, Sana!",
     tapInstruction: "tap anywhere to continue"
   },
 
@@ -77,14 +77,14 @@ export const birthdayConfig = {
   },
 
   envelope: {
-    topTitle: "One last thing, Uzma...",
+    topTitle: "One last thing, Sana...",
     subtitle: "A special letter just for you.",
-    sealInitial: "U",
+    sealInitial: "S",
     tapInstruction: "Tap to open your letter"
   },
 
   letter: {
-    greeting: "Dear Uzma,",
+    greeting: "Dear Sana,",
     headline: "Happy Birthday ❤️",
     paragraphs: [
       "You are Sweet Soul, Kind Heart, Always There, and I'm so grateful to have you in my life.",
@@ -97,14 +97,14 @@ export const birthdayConfig = {
     body: "You are Sweet Soul, Kind Heart, Always There, and I'm so grateful to have you in my life.",
     valediction: "With love and best wishes,",
     signature: "Your Special Someone 💝",
-    subSignature: "Huzaifa,",
+    subSignature: "Umar,",
     buttonText: "Continue"
   },
 
   final: {
     mainTitle: "HAPPY BIRTHDAY",
-    name: "Uzma!",
-    credit: "Made with love, just for you — Huzaifa 💖",
+    name: "Sana!",
+    credit: "Made with love, just for you — Umar 💖",
     replayButton: "Replay the Preview 🔄"
   }
 };

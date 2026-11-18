@@ -1,8 +1,8 @@
-# 🎂 Interactive Birthday Experience — Uzma ✨
+# 🎂 Interactive Birthday Experience — Sana ✨
 
 A personalized, interactive web application built with **React**, **Vite**, **Tailwind CSS v4**, and **Framer Motion**. Designed with physics-based drag-and-shot interactions, layer-by-layer animated birthday cake, balloon popping, and heart-felt parchment letter opening.
 
-Made with love by **Huzaifa** for **Uzma** 💖
+Made with love by **Umar** for **Sana** 💖
 
 ---
 
@@ -91,9 +91,9 @@ All text content, recipient name, age, and messages can be customized in [`src/c
 
 ```javascript
 export const birthdayConfig = {
-  name: "Uzma",
+  name: "Sana",
   age: 14,
-  sender: "Huzaifa",
+  sender: "Umar",
   // ... customized text and letter contents
 };
 ```
