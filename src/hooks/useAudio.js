@@ -1,5 +1,16 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 
+// Resolves relative public URL considering Vite base path
+function resolveAudioUrl(url) {
+  if (!url || url.startsWith('http://') || url.startsWith('https://') || url.startsWith('blob:') || url.startsWith('data:')) {
+    return url;
+  }
+  const base = import.meta.env.BASE_URL || '/';
+  const cleanBase = base.endsWith('/') ? base.slice(0, -1) : base;
+  const cleanUrl = url.startsWith('/') ? url : `/${url}`;
+  return `${cleanBase}${cleanUrl}`;
+}
+
 export function useAudio(bgmUrl = '/music/love-is-a-waste-of-time.mp3') {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
@@ -7,19 +18,21 @@ export function useAudio(bgmUrl = '/music/love-is-a-waste-of-time.mp3') {
   const [duration, setDuration] = useState(0);
   const [hasStarted, setHasStarted] = useState(false);
   const [isAudioAvailable, setIsAudioAvailable] = useState(true);
-  const [volume, setVolumeState] = useState(0.65);
+  const [audioError, setAudioError] = useState(null);
+  const [volume, setVolumeState] = useState(0.7);
 
   const audioRef = useRef(null);
   const audioCtxRef = useRef(null);
   const volumeFadeRef = useRef(null);
+  const blobUrlRef = useRef(null);
 
   // Initialize and persist single Audio instance
   useEffect(() => {
     const audio = new Audio();
-    audio.src = bgmUrl;
+    audio.src = resolveAudioUrl(bgmUrl);
     audio.loop = true;
     audio.preload = 'auto';
-    audio.volume = 0.65;
+    audio.volume = 0.7;
     audioRef.current = audio;
 
     const onTimeUpdate = () => {
@@ -34,17 +47,17 @@ export function useAudio(bgmUrl = '/music/love-is-a-waste-of-time.mp3') {
         setDuration(audio.duration);
       }
       setIsAudioAvailable(true);
+      setAudioError(null);
     };
 
     const onPlay = () => setIsPlaying(true);
     const onPause = () => setIsPlaying(false);
 
     const onError = () => {
-      // Graceful fallback if MP3 is not yet added to /public/music/
-      console.warn(
-        `Background audio file at "${bgmUrl}" is not available or not yet copied to public/music. Please place love-is-a-waste-of-time.mp3 in public/music/.`
-      );
+      const msg = `Audio file not found at ${bgmUrl}. Please place love-is-a-waste-of-time.mp3 in public/music/`;
+      console.warn(msg);
       setIsAudioAvailable(false);
+      setAudioError(msg);
       setIsPlaying(false);
     };
 
@@ -57,6 +70,10 @@ export function useAudio(bgmUrl = '/music/love-is-a-waste-of-time.mp3') {
     return () => {
       if (volumeFadeRef.current) {
         clearInterval(volumeFadeRef.current);
+      }
+      if (blobUrlRef.current) {
+        URL.revokeObjectURL(blobUrlRef.current);
+        blobUrlRef.current = null;
       }
       audio.removeEventListener('timeupdate', onTimeUpdate);
       audio.removeEventListener('loadedmetadata', onLoadedMetadata);
@@ -96,7 +113,7 @@ export function useAudio(bgmUrl = '/music/love-is-a-waste-of-time.mp3') {
     }, interval);
   }, []);
 
-  // Primary user-gesture trigger to start music (bypasses browser autoplay restrictions)
+  // Primary user-gesture trigger to start music
   const startMusic = useCallback(() => {
     setHasStarted(true);
     if (!audioRef.current) return;
@@ -107,10 +124,42 @@ export function useAudio(bgmUrl = '/music/love-is-a-waste-of-time.mp3') {
       playPromise
         .then(() => {
           setIsPlaying(true);
+          setAudioError(null);
           fadeVolume(volume, 600);
         })
         .catch((err) => {
-          console.warn('Autoplay prevented or music file missing:', err.message);
+          console.warn('Playback error or file missing:', err.message);
+          setIsPlaying(false);
+          setIsAudioAvailable(false);
+        });
+    }
+  }, [fadeVolume, volume]);
+
+  // Load custom audio file from user device (File object)
+  const loadAudioFile = useCallback((file) => {
+    if (!file || !audioRef.current) return;
+
+    if (blobUrlRef.current) {
+      URL.revokeObjectURL(blobUrlRef.current);
+    }
+    const newBlobUrl = URL.createObjectURL(file);
+    blobUrlRef.current = newBlobUrl;
+
+    audioRef.current.src = newBlobUrl;
+    audioRef.current.load();
+    setIsAudioAvailable(true);
+    setAudioError(null);
+    setHasStarted(true);
+
+    const playPromise = audioRef.current.play();
+    if (playPromise !== undefined) {
+      playPromise
+        .then(() => {
+          setIsPlaying(true);
+          fadeVolume(volume, 500);
+        })
+        .catch((err) => {
+          console.warn('Error playing selected file:', err);
         });
     }
   }, [fadeVolume, volume]);
@@ -142,12 +191,10 @@ export function useAudio(bgmUrl = '/music/love-is-a-waste-of-time.mp3') {
   const toggleMute = useCallback(() => {
     if (!audioRef.current) return;
     if (isMuted) {
-      // Unmuting: restore volume smoothly
       audioRef.current.muted = false;
       setIsMuted(false);
       fadeVolume(volume, 300);
     } else {
-      // Muting: smooth fade out then mute
       fadeVolume(0, 300, () => {
         if (audioRef.current) {
           audioRef.current.muted = true;
@@ -172,7 +219,7 @@ export function useAudio(bgmUrl = '/music/love-is-a-waste-of-time.mp3') {
     }
   }, [isMuted]);
 
-  // Balloon pop sound effect via isolated Web Audio API (never interrupts background music)
+  // Balloon pop sound effect via isolated Web Audio API
   const playPopSfx = useCallback(() => {
     if (isMuted) return;
     try {
@@ -215,7 +262,9 @@ export function useAudio(bgmUrl = '/music/love-is-a-waste-of-time.mp3') {
     volume,
     hasStarted,
     isAudioAvailable,
+    audioError,
     startMusic,
+    loadAudioFile,
     togglePlay,
     toggleMute,
     seek,

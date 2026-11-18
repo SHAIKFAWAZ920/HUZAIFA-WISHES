@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, Pause, Volume2, VolumeX, ChevronUp, ChevronDown } from 'lucide-react';
+import { Play, Pause, Volume2, VolumeX, ChevronUp, ChevronDown, Upload, AlertCircle } from 'lucide-react';
 import { MusicVisualizer } from './MusicVisualizer';
 
 export function MusicPlayer({
@@ -9,12 +9,15 @@ export function MusicPlayer({
   currentTime,
   duration,
   progress,
+  isAudioAvailable = true,
   onTogglePlay,
   onToggleMute,
   onSeek,
+  onLoadAudioFile,
   songConfig
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const fileInputRef = useRef(null);
 
   const title = songConfig?.title || 'Love Is a Waste of Time';
   const movie = songConfig?.movie || 'PK';
@@ -35,8 +38,23 @@ export function MusicPlayer({
     onSeek(percent);
   };
 
+  const handleFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (file && onLoadAudioFile) {
+      onLoadAudioFile(file);
+    }
+  };
+
   return (
     <div className="fixed bottom-3 right-3 sm:bottom-5 sm:right-5 z-40 flex flex-col items-end select-none">
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="audio/*"
+        onChange={handleFileChange}
+        className="hidden"
+      />
+
       <AnimatePresence>
         {isExpanded && (
           <motion.div
@@ -44,7 +62,7 @@ export function MusicPlayer({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 15, scale: 0.95 }}
             transition={{ duration: 0.25 }}
-            className="mb-2 w-72 sm:w-80 rounded-2xl border border-pink-500/30 bg-black/80 backdrop-blur-xl p-3.5 shadow-[0_8px_32px_rgba(0,0,0,0.6),0_0_20px_rgba(244,114,182,0.2)] text-white"
+            className="mb-2 w-72 sm:w-80 rounded-2xl border border-pink-500/30 bg-black/85 backdrop-blur-xl p-3.5 shadow-[0_8px_32px_rgba(0,0,0,0.6),0_0_20px_rgba(244,114,182,0.2)] text-white"
           >
             {/* Header: Title, Movie & Visualizer */}
             <div className="flex items-center gap-3">
@@ -54,10 +72,8 @@ export function MusicPlayer({
                   className="h-12 w-12 rounded-full border-2 border-stone-800 bg-gradient-to-tr from-neutral-900 via-neutral-950 to-stone-900 shadow-md flex items-center justify-center animate-spin-record overflow-hidden"
                   style={{ animationPlayState: isPlaying ? 'running' : 'paused' }}
                 >
-                  {/* Subtle Vinyl Grooves */}
                   <div className="absolute inset-1 rounded-full border border-white/10" />
                   <div className="absolute inset-2.5 rounded-full border border-white/5" />
-                  {/* Vinyl Center Label */}
                   <div className="h-4 w-4 rounded-full bg-gradient-to-tr from-pink-500 to-amber-400 flex items-center justify-center text-[7px] font-bold text-black">
                     PK
                   </div>
@@ -77,6 +93,29 @@ export function MusicPlayer({
               {/* Waveform Visualizer */}
               <MusicVisualizer isPlaying={isPlaying} />
             </div>
+
+            {/* Missing Audio Warning & File Selector */}
+            {!isAudioAvailable && (
+              <div className="mt-2.5 rounded-lg border border-amber-500/40 bg-amber-500/10 p-2 text-left">
+                <div className="flex items-start gap-1.5 text-amber-300 text-[11px]">
+                  <AlertCircle className="h-3.5 w-3.5 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-medium">Audio file not found in public/music/</p>
+                    <p className="text-[10px] text-amber-200/80 mt-0.5">
+                      Place <span className="font-mono text-white">love-is-a-waste-of-time.mp3</span> in the folder, or select it from your device:
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="mt-2 w-full flex items-center justify-center gap-1.5 rounded-md bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/40 py-1 text-xs font-semibold text-amber-200 transition-colors cursor-pointer"
+                >
+                  <Upload className="h-3 w-3" />
+                  <span>Choose MP3 File</span>
+                </button>
+              </div>
+            )}
 
             {/* Progress Scrubber Bar */}
             <div className="mt-3">
@@ -113,9 +152,15 @@ export function MusicPlayer({
                 )}
               </button>
 
-              <div className="text-[11px] text-pink-300/80 font-serif-cormorant italic">
-                Romantic Melody ✨
-              </div>
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="flex items-center gap-1 text-[11px] text-pink-300/80 hover:text-pink-200 cursor-pointer font-sans-poppins"
+                title="Change or select another audio file"
+              >
+                <Upload className="h-3 w-3" />
+                <span>Choose Song</span>
+              </button>
 
               <button
                 onClick={onTogglePlay}
@@ -130,7 +175,7 @@ export function MusicPlayer({
         )}
       </AnimatePresence>
 
-      {/* Floating Compact Docking Pill (Always Visible in Corner) */}
+      {/* Floating Compact Docking Pill */}
       <motion.div
         whileHover={{ scale: 1.03 }}
         whileTap={{ scale: 0.97 }}
@@ -138,7 +183,6 @@ export function MusicPlayer({
         onClick={() => setIsExpanded(!isExpanded)}
         title={isExpanded ? 'Collapse Music Player' : 'Expand Music Controls'}
       >
-        {/* Spinning mini vinyl record */}
         <div
           className="h-7 w-7 rounded-full border border-pink-400/40 bg-gradient-to-tr from-neutral-900 to-stone-900 shadow-inner flex items-center justify-center animate-spin-record overflow-hidden"
           style={{ animationPlayState: isPlaying ? 'running' : 'paused' }}
@@ -146,7 +190,6 @@ export function MusicPlayer({
           <div className="h-2 w-2 rounded-full bg-amber-400" />
         </div>
 
-        {/* Mini waveform & song title */}
         <div className="flex items-center gap-2 pr-1">
           <span className="hidden sm:inline text-xs font-medium text-pink-100 max-w-[120px] truncate font-sans-poppins">
             {title}
@@ -154,7 +197,6 @@ export function MusicPlayer({
           <MusicVisualizer isPlaying={isPlaying} barCount={4} className="h-3" />
         </div>
 
-        {/* Quick Play/Pause button */}
         <button
           onClick={(e) => {
             e.stopPropagation();
@@ -167,7 +209,6 @@ export function MusicPlayer({
           {isPlaying ? <Pause className="h-3 w-3" /> : <Play className="h-3 w-3 ml-0.5" />}
         </button>
 
-        {/* Expand / Collapse Chevron */}
         <div className="text-pink-300/70 pl-0.5">
           {isExpanded ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronUp className="h-3.5 w-3.5" />}
         </div>

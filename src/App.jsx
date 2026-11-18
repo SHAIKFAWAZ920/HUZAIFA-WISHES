@@ -32,7 +32,9 @@ function App() {
     duration,
     progress,
     hasStarted,
+    isAudioAvailable,
     startMusic,
+    loadAudioFile,
     togglePlay,
     toggleMute,
     seek,
@@ -56,6 +58,8 @@ function App() {
           <RomanticIntroModal
             isOpen={showIntroModal}
             onOpenSurprise={handleOpenSurprise}
+            isAudioAvailable={isAudioAvailable}
+            onLoadAudioFile={loadAudioFile}
             config={birthdayConfig}
           />
         )}
@@ -88,9 +92,11 @@ function App() {
               currentTime={currentTime}
               duration={duration}
               progress={progress}
+              isAudioAvailable={isAudioAvailable}
               onTogglePlay={togglePlay}
               onToggleMute={toggleMute}
               onSeek={seek}
+              onLoadAudioFile={loadAudioFile}
               songConfig={birthdayConfig.music}
             />
           </motion.div>
