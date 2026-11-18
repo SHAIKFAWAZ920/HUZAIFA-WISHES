@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { ParticleSystem } from '../components/ParticleSystem';
 import { BalloonItem } from '../components/BalloonItem';
 import { ReasonCard } from '../components/ReasonCard';
+import { FloatingHearts } from '../components/FloatingHearts';
 
 export function BalloonsScene({ onNext, config, playPopSfx }) {
   const [poppedIds, setPoppedIds] = useState([]);
@@ -19,6 +20,11 @@ export function BalloonsScene({ onNext, config, playPopSfx }) {
   return (
     <div className="relative flex h-full w-full flex-col items-center justify-between bg-gradient-to-b from-[#2b1029] via-[#1e0a1d] to-[#120412] py-6 px-4 overflow-y-auto select-none">
       <ParticleSystem type="stars" />
+
+      {/* Floating Hearts when all reasons unlocked */}
+      <AnimatePresence>
+        {allPopped && <FloatingHearts count={6} active={true} origin="bottom" />}
+      </AnimatePresence>
 
       {/* Header Section */}
       <motion.div
@@ -51,7 +57,16 @@ export function BalloonsScene({ onNext, config, playPopSfx }) {
       <div className="z-10 w-full max-w-sm space-y-2.5 px-1">
         {balloons.map((b) => {
           if (!poppedIds.includes(b.id)) return null;
-          return <ReasonCard key={b.id} number={b.number} text={b.text} />;
+          return (
+            <motion.div
+              key={b.id}
+              initial={{ opacity: 0, y: 15, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ duration: 0.4 }}
+            >
+              <ReasonCard number={b.number} text={b.text} />
+            </motion.div>
+          );
         })}
       </div>
 
@@ -68,7 +83,7 @@ export function BalloonsScene({ onNext, config, playPopSfx }) {
             </p>
             <button
               onClick={onNext}
-              className="rounded-full bg-gradient-to-r from-amber-500 to-orange-500 px-5 py-2 text-xs sm:text-sm font-semibold text-white shadow-lg transition-transform active:scale-95 hover:brightness-110 font-sans-poppins"
+              className="rounded-full bg-gradient-to-r from-amber-500 to-orange-500 px-5 py-2 text-xs sm:text-sm font-semibold text-white shadow-lg transition-transform active:scale-95 hover:brightness-110 font-sans-poppins cursor-pointer"
             >
               Next: Sealed Envelope ✨
             </button>

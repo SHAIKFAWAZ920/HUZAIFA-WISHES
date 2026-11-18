@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { ParticleSystem } from '../components/ParticleSystem';
 import { EnvelopeGraphic } from '../components/EnvelopeGraphic';
+import { Music, Sparkles } from 'lucide-react';
 
 export function EnvelopeScene({ onNext, config }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -11,8 +12,13 @@ export function EnvelopeScene({ onNext, config }) {
     setIsOpen(true);
     setTimeout(() => {
       onNext();
-    }, 1200);
+    }, 1800);
   };
+
+  const romanticNote =
+    config.envelope?.romanticNote ||
+    config.music?.quotes?.scene6 ||
+    "A little melody, a little magic, and a whole lot of wishes for someone special.";
 
   return (
     <div
@@ -48,6 +54,27 @@ export function EnvelopeScene({ onNext, config }) {
           letterGreeting={config.letter.greeting}
           letterBody={config.letter.body}
         />
+
+        {/* Revealed Romantic Melody Note on Open */}
+        <AnimatePresence>
+          {isOpen && (
+            <motion.div
+              initial={{ opacity: 0, y: 15, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              className="mt-6 max-w-xs rounded-2xl border border-pink-400/40 bg-black/60 backdrop-blur-md px-4 py-2.5 text-center shadow-[0_0_25px_rgba(244,114,182,0.3)]"
+            >
+              <div className="flex items-center justify-center gap-1.5 text-pink-300 text-xs mb-1">
+                <Music className="h-3 w-3 animate-pulse" />
+                <span className="font-serif-cormorant italic">Love Is a Waste of Time</span>
+                <Sparkles className="h-3 w-3 text-amber-300" />
+              </div>
+              <p className="font-serif-cormorant italic text-xs sm:text-sm text-amber-100 leading-snug">
+                &ldquo;{romanticNote}&rdquo;
+              </p>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.div>
 
       {/* Bottom Subtext */}
@@ -57,7 +84,7 @@ export function EnvelopeScene({ onNext, config }) {
         transition={{ delay: 1, duration: 0.8 }}
         className="z-10 text-xs text-amber-100/70 font-sans-poppins tracking-wider mb-2"
       >
-        {config.envelope.tapInstruction}
+        {isOpen ? 'Opening your letter...' : config.envelope.tapInstruction}
       </motion.p>
     </div>
   );

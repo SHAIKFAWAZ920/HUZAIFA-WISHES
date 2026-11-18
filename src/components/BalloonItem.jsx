@@ -2,16 +2,21 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export function BalloonItem({ balloon, isPopped, onPop, index }) {
+  const handleClick = () => {
+    if (isPopped) return;
+    onPop(balloon.id);
+  };
+
   return (
     <div className="relative flex flex-col items-center">
       <AnimatePresence>
-        {!isPopped && (
+        {!isPopped ? (
           <motion.div
             initial={{ scale: 0, y: 30 }}
             animate={{ scale: 1, y: 0 }}
-            exit={{ scale: [1, 1.3, 0], opacity: 0 }}
-            transition={{ duration: 0.4 }}
-            onClick={() => onPop(balloon.id)}
+            exit={{ scale: [1, 1.35, 0], opacity: 0 }}
+            transition={{ duration: 0.35, ease: 'easeOut' }}
+            onClick={handleClick}
             className="cursor-pointer group animate-float-sway"
             style={{ animationDelay: `${index * 0.4}s` }}
           >
@@ -28,6 +33,17 @@ export function BalloonItem({ balloon, isPopped, onPop, index }) {
               <div className="h-1.5 w-2 rounded-sm bg-rose-700" />
               <div className="h-8 w-0.5 bg-white/30" />
             </div>
+          </motion.div>
+        ) : (
+          /* Pop Heart Float Effect */
+          <motion.div
+            key="pop-heart"
+            initial={{ scale: 0.4, opacity: 1, y: 0 }}
+            animate={{ scale: 1.2, opacity: 0, y: -35 }}
+            transition={{ duration: 0.7, ease: 'easeOut' }}
+            className="pointer-events-none absolute text-base sm:text-lg select-none"
+          >
+            💖
           </motion.div>
         )}
       </AnimatePresence>

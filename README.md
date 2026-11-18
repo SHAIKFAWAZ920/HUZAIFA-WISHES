@@ -1,8 +1,16 @@
 # 🎂 Interactive Birthday Experience — Sana ✨
 
-A personalized, interactive web application built with **React**, **Vite**, **Tailwind CSS v4**, and **Framer Motion**. Designed with physics-based drag-and-shot interactions, layer-by-layer animated birthday cake, balloon popping, and heart-felt parchment letter opening.
+A personalized, interactive web application built with **React**, **Vite**, **Tailwind CSS v4**, and **Framer Motion**. Features an integrated romantic music player with *"Love Is a Waste of Time"* (PK), physics-based drag-and-shot interactions, layer-by-layer animated birthday cake, balloon popping, and heart-felt parchment letter opening.
 
 Made with love by **Umar** for **Sana** 💖
+
+---
+
+## 🎵 Romantic Music Experience
+- **Featured Song**: *Love Is a Waste of Time* (from *PK*)
+- **Artists**: Sonu Nigam & Shreya Ghoshal (Music: Shantanu Moitra)
+- **Audio File Path**: `public/music/love-is-a-waste-of-time.mp3`
+- **Features**: Glassmorphic floating player, rotating vinyl disc, animated waveform visualizer, scrubber, mute/volume controls, and romantic quotes across all 8 scenes.
 
 ---
 

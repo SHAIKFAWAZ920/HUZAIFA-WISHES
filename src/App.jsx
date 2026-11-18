@@ -1,12 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 
 import { birthdayConfig } from './config/birthdayConfig';
 import { useSceneController } from './hooks/useSceneController';
 import { useAudio } from './hooks/useAudio';
 
-import { MusicController } from './components/MusicController';
+import { MusicPlayer } from './components/MusicPlayer';
+import { RomanticIntroModal } from './components/RomanticIntroModal';
+import { FloatingHearts } from './components/FloatingHearts';
 import { SceneNavigator } from './components/SceneNavigator';
+
 import { IntroScene } from './scenes/IntroScene';
 import { BirthdayTitleScene } from './scenes/BirthdayTitleScene';
 import { BirthdayTreeScene } from './scenes/BirthdayTreeScene';
@@ -18,24 +21,81 @@ import { FinalCelebrationScene } from './scenes/FinalCelebrationScene';
 
 function App() {
   const { currentScene, nextScene, goToScene, resetAll, SCENES, SCENE_ORDER } = useSceneController();
-  const { isPlaying, isMuted, togglePlay, toggleMute, playPopSfx } = useAudio(birthdayConfig.audio.bgm);
+  const [showIntroModal, setShowIntroModal] = useState(true);
+  const [introHearts, setIntroHearts] = useState(false);
+
+  // Single persistent audio instance across the entire application lifecycle
+  const {
+    isPlaying,
+    isMuted,
+    currentTime,
+    duration,
+    progress,
+    hasStarted,
+    startMusic,
+    togglePlay,
+    toggleMute,
+    seek,
+    playPopSfx
+  } = useAudio(birthdayConfig.audio.bgm);
+
+  const handleOpenSurprise = () => {
+    startMusic();
+    setIntroHearts(true);
+    setShowIntroModal(false);
+    setTimeout(() => {
+      setIntroHearts(false);
+    }, 4000);
+  };
 
   return (
     <div className="relative h-screen w-screen bg-gradient-to-br from-neutral-950 via-slate-900 to-neutral-950 overflow-hidden flex items-center justify-center p-0 sm:p-4">
-      {/* Scene / Template Quick Selector Dropdown */}
+      {/* Romantic Music Introduction Modal */}
+      <AnimatePresence>
+        {showIntroModal && (
+          <RomanticIntroModal
+            isOpen={showIntroModal}
+            onOpenSurprise={handleOpenSurprise}
+            config={birthdayConfig}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Floating Glowing Hearts upon opening surprise */}
+      <AnimatePresence>
+        {introHearts && <FloatingHearts count={12} active={true} origin="center" />}
+      </AnimatePresence>
+
+      {/* Scene Quick Selector Dropdown (Top-Left) */}
       <SceneNavigator
         currentScene={currentScene}
         onSelectScene={goToScene}
         scenesOrder={SCENE_ORDER}
       />
 
-      {/* Floating Audio Music Controller */}
-      <MusicController
-        isPlaying={isPlaying}
-        isMuted={isMuted}
-        onTogglePlay={togglePlay}
-        onToggleMute={toggleMute}
-      />
+      {/* Premium Floating Music Player (Bottom-Right Corner) */}
+      <AnimatePresence>
+        {hasStarted && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <MusicPlayer
+              isPlaying={isPlaying}
+              isMuted={isMuted}
+              currentTime={currentTime}
+              duration={duration}
+              progress={progress}
+              onTogglePlay={togglePlay}
+              onToggleMute={toggleMute}
+              onSeek={seek}
+              songConfig={birthdayConfig.music}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Main Responsive Viewport Container */}
       <main className="relative h-full w-full sm:h-[92vh] sm:max-w-md md:max-w-lg mx-auto overflow-hidden bg-black sm:rounded-3xl sm:border sm:border-white/15 sm:shadow-[0_0_60px_rgba(0,0,0,0.9)]">

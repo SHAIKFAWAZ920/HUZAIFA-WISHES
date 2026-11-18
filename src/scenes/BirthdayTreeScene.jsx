@@ -1,8 +1,19 @@
-import React from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { BirthdayTree } from '../birthday-tree/BirthdayTree';
+import { FloatingHearts } from '../components/FloatingHearts';
 
 export function BirthdayTreeScene({ onNext, config }) {
+  const [blossomed, setBlossomed] = useState(false);
+
+  useEffect(() => {
+    // Tree starts blossoming around 2.5s into the animation
+    const timer = setTimeout(() => {
+      setBlossomed(true);
+    }, 2400);
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <div
       onClick={onNext}
@@ -11,12 +22,19 @@ export function BirthdayTreeScene({ onNext, config }) {
       {/* Background Soft Atmospheric Glow */}
       <div className="absolute top-10 right-10 h-[280px] w-[280px] rounded-full bg-pink-200/50 blur-3xl pointer-events-none" />
 
+      {/* Floating hearts & blossom petals when tree blooms */}
+      <AnimatePresence>
+        {blossomed && (
+          <FloatingHearts count={7} active={true} origin="bottom" />
+        )}
+      </AnimatePresence>
+
       {/* Growing Tree Component Container */}
       <div className="absolute inset-0 z-0">
-        <BirthdayTree />
+        <BirthdayTree onGrowthComplete={() => setBlossomed(true)} />
       </div>
 
-      {/* Overlay Text Content - Scoped to left side (48% width) so it never collides with tree branches */}
+      {/* Overlay Text Content - Scoped to left side (48% width) */}
       <div className="relative z-10 flex h-full w-full flex-col justify-center px-4 sm:px-8 pointer-events-none">
         <motion.div
           initial={{ opacity: 0, x: -20 }}
@@ -39,6 +57,16 @@ export function BirthdayTreeScene({ onNext, config }) {
           <p className="font-serif-cormorant italic text-xs sm:text-sm text-stone-700 pt-1 leading-snug">
             {config.tree.subtitle}
           </p>
+
+          {/* Subtle romantic melody note */}
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 0.7 }}
+            transition={{ delay: 2, duration: 1 }}
+            className="text-[10px] text-pink-700/70 font-serif-cormorant italic pt-2"
+          >
+            ♪ Love Is a Waste of Time • PK
+          </motion.p>
         </motion.div>
       </div>
 

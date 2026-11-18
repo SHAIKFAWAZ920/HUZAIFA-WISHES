@@ -1,23 +1,33 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ParticleSystem } from '../components/ParticleSystem';
 import { CakeGraphic } from '../components/CakeGraphic';
+import { FloatingHearts } from '../components/FloatingHearts';
 
 export function CakeScene({ onNext, config }) {
   const [isBlownOut, setIsBlownOut] = useState(false);
+  const audioCtxRef = useRef(null);
 
   const handleBlowCandle = (e) => {
     e.stopPropagation();
     if (isBlownOut) return;
     setIsBlownOut(true);
 
-    // Audio SFX: Puff + Magical Chime
+    // Audio SFX: Puff + Magical Chime via isolated Web Audio API
+    // Does NOT pause or affect background song playback
     try {
       const AudioCtx = window.AudioContext || window.webkitAudioContext;
       if (AudioCtx) {
-        const ctx = new AudioCtx();
-        // Puff sound
-        const bufferSize = ctx.sampleRate * 0.25;
+        if (!audioCtxRef.current) {
+          audioCtxRef.current = new AudioCtx();
+        }
+        const ctx = audioCtxRef.current;
+        if (ctx.state === 'suspended') {
+          ctx.resume();
+        }
+
+        // Soft puff sound
+        const bufferSize = Math.floor(ctx.sampleRate * 0.2);
         const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
         const data = buffer.getChannelData(0);
         for (let i = 0; i < bufferSize; i++) {
@@ -29,8 +39,8 @@ export function CakeScene({ onNext, config }) {
         filter.type = 'bandpass';
         filter.frequency.setValueAtTime(350, ctx.currentTime);
         const gain = ctx.createGain();
-        gain.gain.setValueAtTime(0.2, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.25);
+        gain.gain.setValueAtTime(0.15, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
         noise.connect(filter);
         filter.connect(gain);
         gain.connect(ctx.destination);
@@ -42,16 +52,16 @@ export function CakeScene({ onNext, config }) {
           const oscGain = ctx.createGain();
           osc.type = 'sine';
           osc.frequency.value = freq;
-          oscGain.gain.setValueAtTime(0.12, ctx.currentTime + 0.1 + idx * 0.07);
-          oscGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6 + idx * 0.07);
+          oscGain.gain.setValueAtTime(0.09, ctx.currentTime + 0.08 + idx * 0.06);
+          oscGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.55 + idx * 0.06);
           osc.connect(oscGain);
           oscGain.connect(ctx.destination);
-          osc.start(ctx.currentTime + 0.1 + idx * 0.07);
-          osc.stop(ctx.currentTime + 0.7 + idx * 0.07);
+          osc.start(ctx.currentTime + 0.08 + idx * 0.06);
+          osc.stop(ctx.currentTime + 0.6 + idx * 0.06);
         });
       }
     } catch {
-      // Audio autoplay policy fallback
+      // Audio context fallback
     }
   };
 
@@ -62,6 +72,13 @@ export function CakeScene({ onNext, config }) {
     >
       {/* Background Particle System: stars before blow out, fireworks after */}
       <ParticleSystem type={isBlownOut ? 'fireworks' : 'stars'} />
+
+      {/* Floating hearts celebration when wish is made */}
+      <AnimatePresence>
+        {isBlownOut && (
+          <FloatingHearts count={8} active={true} origin="center" />
+        )}
+      </AnimatePresence>
 
       {/* Top Header */}
       <motion.div
@@ -99,33 +116,33 @@ export function CakeScene({ onNext, config }) {
       <div className="z-10 flex flex-col items-center mb-2">
         <AnimatePresence mode="wait">
           {!isBlownOut ? (
-            <motion.div
-              key="instruction"
+            <motion.p
+              key="tapToBlow"
               initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
+              animate={{ opacity: 0.7 }}
               exit={{ opacity: 0 }}
-              onClick={handleBlowCandle}
-              className="cursor-pointer px-4 py-2 rounded-full bg-amber-500/20 border border-amber-400/30 backdrop-blur-sm shadow-lg hover:bg-amber-500/30 transition-all"
+              className="text-xs text-amber-200/70 font-sans-poppins tracking-wider"
             >
-              <p className="text-sm text-amber-200 font-sans-poppins tracking-wider animate-pulse text-center">
-                🕯️ Touch / Blow the candle to extinguish flame & make a wish!
-              </p>
-            </motion.div>
+              Tap the flame or candle to blow it out 🕯️
+            </motion.p>
           ) : (
-            <motion.button
-              key="next-btn"
-              initial={{ opacity: 0, scale: 0.85, y: 10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              transition={{ type: 'spring', stiffness: 200, damping: 15 }}
-              onClick={onNext}
-              className="px-6 py-2.5 rounded-full bg-gradient-to-r from-amber-500 to-rose-500 text-white font-sans-poppins text-sm font-semibold shadow-lg hover:scale-105 transition-transform cursor-pointer"
+            <motion.div
+              key="continue"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.4 }}
+              className="flex flex-col items-center"
             >
-              Next: Reason Balloons 🎈 →
-            </motion.button>
+              <button
+                onClick={onNext}
+                className="rounded-full bg-gradient-to-r from-amber-500 to-orange-500 px-6 py-2.5 text-xs sm:text-sm font-semibold text-white shadow-xl transition-transform active:scale-95 hover:brightness-110 font-sans-poppins cursor-pointer"
+              >
+                Continue to Balloons 🎈
+              </button>
+            </motion.div>
           )}
         </AnimatePresence>
       </div>
     </div>
   );
 }
-

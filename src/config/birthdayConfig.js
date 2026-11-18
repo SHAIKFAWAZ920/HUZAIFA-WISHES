@@ -4,8 +4,27 @@ export const birthdayConfig = {
   sender: "Umar",
 
   audio: {
-    bgm: "/audio/birthday.mp3",
+    bgm: "/music/love-is-a-waste-of-time.mp3",
     popSfx: "/audio/pop.mp3",
+  },
+
+  music: {
+    title: "Love Is a Waste of Time",
+    movie: "PK",
+    artists: "Sonu Nigam & Shreya Ghoshal",
+    composer: "Shantanu Moitra",
+    path: "/music/love-is-a-waste-of-time.mp3",
+    intro: {
+      quote: "Some songs are not just songs... they remind us of someone special.",
+      subtext: "Tonight, this little surprise comes with a special melody. ❤️",
+      buttonText: "Open Your Surprise 🎁"
+    },
+    quotes: {
+      scene2: "Love is a waste of time... until someone makes every moment worth remembering.",
+      scene6: "A little melody, a little magic, and a whole lot of wishes for someone special.",
+      scene7: "Maybe love is a waste of time for some... but making someone smile is always worth it.",
+      scene8: "Some moments become memories. Some songs become feelings. And some people make life more beautiful just by being in it."
+    }
   },
 
   intro: {
@@ -16,7 +35,8 @@ export const birthdayConfig = {
   birthdayTitle: {
     topText: "make a wish...",
     mainTitle: "HAPPY BIRTHDAY",
-    subTitle: "to someone worth celebrating"
+    subTitle: "to someone worth celebrating",
+    romanticQuote: "Love is a waste of time... until someone makes every moment worth remembering."
   },
 
   tree: {
@@ -79,11 +99,13 @@ export const birthdayConfig = {
   envelope: {
     topTitle: "One last thing, Sana...",
     subtitle: "A special letter just for you.",
+    romanticNote: "A little melody, a little magic, and a whole lot of wishes for someone special.",
     sealInitial: "S",
     tapInstruction: "Tap to open your letter"
   },
 
   letter: {
+    preludeQuote: "Maybe love is a waste of time for some... but making someone smile is always worth it.",
     greeting: "Dear Sana,",
     headline: "Happy Birthday ❤️",
     paragraphs: [
@@ -104,6 +126,8 @@ export const birthdayConfig = {
   final: {
     mainTitle: "HAPPY BIRTHDAY",
     name: "Sana!",
+    romanticReflection: "Some moments become memories. Some songs become feelings. And some people make life more beautiful just by being in it.",
+    finalGreeting: "Happy Birthday, Sana! ❤️",
     credit: "Made with love, just for you — Umar 💖",
     replayButton: "Replay the Preview 🔄"
   }
