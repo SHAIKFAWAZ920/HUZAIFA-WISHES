@@ -1,8 +1,14 @@
 import React, { useEffect, useRef } from 'react';
 import { generateTreeStructure } from './treeGenerator';
 
-export function BirthdayTree({ onGrowthComplete }) {
+function BirthdayTreeComponent({ onGrowthComplete }) {
   const canvasRef = useRef(null);
+  const onGrowthCompleteRef = useRef(onGrowthComplete);
+
+  // Keep latest callback reference without triggering canvas animation restart
+  useEffect(() => {
+    onGrowthCompleteRef.current = onGrowthComplete;
+  }, [onGrowthComplete]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -11,16 +17,28 @@ export function BirthdayTree({ onGrowthComplete }) {
 
     let animationId;
     let startTime = null;
+    let hasNotifiedGrowth = false;
 
-    let width = (canvas.width = canvas.parentElement.clientWidth || window.innerWidth);
-    let height = (canvas.height = canvas.parentElement.clientHeight || window.innerHeight);
+    const updateDimensions = () => {
+      const parent = canvas.parentElement;
+      const w = parent?.clientWidth || canvas.clientWidth || window.innerWidth;
+      const h = parent?.clientHeight || canvas.clientHeight || window.innerHeight;
+      const dpr = Math.min(2, window.devicePixelRatio || 1);
 
+      canvas.width = w * dpr;
+      canvas.height = h * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      return { width: w, height: h };
+    };
+
+    let { width, height } = updateDimensions();
     let treeData = generateTreeStructure(width, height);
 
     const handleResize = () => {
-      if (!canvas || !canvas.parentElement) return;
-      width = canvas.width = canvas.parentElement.clientWidth || window.innerWidth;
-      height = canvas.height = canvas.parentElement.clientHeight || window.innerHeight;
+      const dims = updateDimensions();
+      width = dims.width;
+      height = dims.height;
       treeData = generateTreeStructure(width, height);
     };
 
@@ -28,6 +46,7 @@ export function BirthdayTree({ onGrowthComplete }) {
 
     // Draw single 3D heart blossom on canvas
     function drawHeartBlossom(x, y, size, color, scale, rotation, opacity) {
+      if (scale <= 0.01 || opacity <= 0.01) return;
       ctx.save();
       ctx.translate(x, y);
       ctx.rotate((rotation * Math.PI) / 180);
@@ -35,31 +54,21 @@ export function BirthdayTree({ onGrowthComplete }) {
       ctx.globalAlpha = opacity;
 
       ctx.fillStyle = color;
-      ctx.shadowBlur = 6;
+      ctx.shadowBlur = 5;
       ctx.shadowColor = color;
 
       ctx.beginPath();
       const topCurveHeight = size * 0.3;
       ctx.moveTo(0, topCurveHeight);
-      // Top left curve
-      ctx.bezierCurveTo(
-        -size / 2, -topCurveHeight,
-        -size, size / 3,
-        0, size
-      );
-      // Top right curve
-      ctx.bezierCurveTo(
-        size, size / 3,
-        size / 2, -topCurveHeight,
-        0, topCurveHeight
-      );
+      ctx.bezierCurveTo(-size / 2, -topCurveHeight, -size, size / 3, 0, size);
+      ctx.bezierCurveTo(size, size / 3, size / 2, -topCurveHeight, 0, topCurveHeight);
       ctx.closePath();
       ctx.fill();
 
-      // Subtle specular highlight on top left
+      // Specular highlight
       ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
       ctx.beginPath();
-      ctx.arc(-size * 0.25, 0, size * 0.18, 0, Math.PI * 2);
+      ctx.arc(-size * 0.22, 0, size * 0.16, 0, Math.PI * 2);
       ctx.fill();
 
       ctx.restore();
@@ -72,64 +81,96 @@ export function BirthdayTree({ onGrowthComplete }) {
 
       ctx.clearRect(0, 0, width, height);
 
-      // Stage timing breakdown (total ~ 7.5 seconds of organic growth)
-      // 0 - 1.5s: Trunk
-      // 1.5 - 3.2s: Branches
-      // 3.2 - 4.2s: Twigs
-      // 4.2 - 7.5s: Heart blossoms bloom into canopy
-      const trunkProgress = Math.min(1, elapsed / 1500);
-      const branchProgress = Math.min(1, Math.max(0, (elapsed - 1400) / 1800));
-      const twigProgress = Math.min(1, Math.max(0, (elapsed - 3000) / 1200));
-      const blossomProgress = Math.min(1, Math.max(0, (elapsed - 4000) / 3200));
+      // Organic growth timing
+      const trunkProgress = Math.min(1, elapsed / 1200);
+      const branchProgress = Math.min(1, Math.max(0, (elapsed - 900) / 1400));
+      const twigProgress = Math.min(1, Math.max(0, (elapsed - 1800) / 1000));
+      const blossomProgress = Math.min(1, Math.max(0, (elapsed - 2400) / 2600));
 
-      // 1. Draw Trunk
-      ctx.fillStyle = '#3b1c10'; // Dark reddish brown
-      ctx.strokeStyle = '#2a1209';
-      ctx.lineWidth = 1;
+      // 1. Draw Connected Solid Wood Trunk
+      const trunkLen = treeData.trunk.length;
+      const visibleTrunkCount = Math.floor(trunkLen * trunkProgress);
 
-      const visibleTrunkCount = Math.floor(treeData.trunk.length * trunkProgress);
-      for (let i = 0; i < visibleTrunkCount; i++) {
-        const pt = treeData.trunk[i];
+      if (visibleTrunkCount > 1) {
+        ctx.save();
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.strokeStyle = '#3b1c10';
+
+        for (let i = 0; i < visibleTrunkCount - 1; i++) {
+          const p1 = treeData.trunk[i];
+          const p2 = treeData.trunk[i + 1];
+          ctx.lineWidth = p1.thickness;
+          ctx.beginPath();
+          ctx.moveTo(p1.x, p1.y);
+          ctx.lineTo(p2.x, p2.y);
+          ctx.stroke();
+        }
+
+        // Draw trunk base footing anchor
+        ctx.fillStyle = '#3b1c10';
+        const base = treeData.trunk[0];
         ctx.beginPath();
-        ctx.arc(pt.x, pt.y, pt.thickness / 2, 0, Math.PI * 2);
+        ctx.arc(base.x, base.y, base.thickness / 2, 0, Math.PI * 2);
         ctx.fill();
+
+        ctx.restore();
       }
 
-      // 2. Draw Branches
+      // 2. Draw Connected Branches
       if (branchProgress > 0) {
+        ctx.save();
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.strokeStyle = '#4a2517';
+
         treeData.branches.forEach((b) => {
           const count = Math.floor(b.path.length * branchProgress);
-          for (let i = 0; i < count; i++) {
-            const pt = b.path[i];
-            ctx.beginPath();
-            ctx.fillStyle = '#4a2517';
-            ctx.arc(pt.x, pt.y, pt.thickness / 2, 0, Math.PI * 2);
-            ctx.fill();
+          if (count > 1) {
+            for (let i = 0; i < count - 1; i++) {
+              const p1 = b.path[i];
+              const p2 = b.path[i + 1];
+              ctx.lineWidth = p1.thickness;
+              ctx.beginPath();
+              ctx.moveTo(p1.x, p1.y);
+              ctx.lineTo(p2.x, p2.y);
+              ctx.stroke();
+            }
           }
         });
+        ctx.restore();
       }
 
-      // 3. Draw Twigs
+      // 3. Draw Connected Twigs
       if (twigProgress > 0) {
+        ctx.save();
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.strokeStyle = '#5c2d1b';
+
         treeData.twigs.forEach((t) => {
           const count = Math.floor(t.path.length * twigProgress);
-          for (let i = 0; i < count; i++) {
-            const pt = t.path[i];
-            ctx.beginPath();
-            ctx.fillStyle = '#5c2d1b';
-            ctx.arc(pt.x, pt.y, pt.thickness / 2, 0, Math.PI * 2);
-            ctx.fill();
+          if (count > 1) {
+            for (let i = 0; i < count - 1; i++) {
+              const p1 = t.path[i];
+              const p2 = t.path[i + 1];
+              ctx.lineWidth = p1.thickness;
+              ctx.beginPath();
+              ctx.moveTo(p1.x, p1.y);
+              ctx.lineTo(p2.x, p2.y);
+              ctx.stroke();
+            }
           }
         });
+        ctx.restore();
       }
 
       // 4. Draw Heart Blossoms Canopy
       if (blossomProgress > 0) {
-        const timeOffset = elapsed - 4000;
+        const timeOffset = elapsed - 2400;
         treeData.blossoms.forEach((b) => {
           if (timeOffset >= b.delay) {
             const localProgress = Math.min(1, (timeOffset - b.delay) / 600);
-            // Elastic pop ease out
             const scale = Math.sin(localProgress * Math.PI * 0.5);
             const opacity = Math.min(1, localProgress * 1.2);
             drawHeartBlossom(b.x, b.y, b.size, b.color, scale, b.rotation, opacity);
@@ -137,25 +178,28 @@ export function BirthdayTree({ onGrowthComplete }) {
         });
       }
 
-      // Floating heart petals drift after growth completes
+      // 5. Floating Drifting Heart Petals after blossoming
       if (blossomProgress >= 1) {
-        const drift = Math.sin(elapsed * 0.0015) * 3;
-        treeData.blossoms.slice(0, 15).forEach((b, idx) => {
-          const floatY = (elapsed * 0.02 + idx * 30) % (height * 0.5);
+        if (!hasNotifiedGrowth) {
+          hasNotifiedGrowth = true;
+          if (onGrowthCompleteRef.current) {
+            onGrowthCompleteRef.current();
+          }
+        }
+
+        const drift = Math.sin(elapsed * 0.0015) * 4;
+        treeData.blossoms.slice(0, 16).forEach((b, idx) => {
+          const floatY = (elapsed * 0.025 + idx * 28) % (height * 0.45);
           drawHeartBlossom(
-            b.x + Math.sin(floatY * 0.05) * 10 + drift,
+            b.x + Math.sin(floatY * 0.05) * 8 + drift,
             b.y + floatY,
-            b.size * 0.8,
+            b.size * 0.75,
             b.color,
-            0.7,
+            0.65,
             b.rotation + floatY,
-            0.6
+            0.55
           );
         });
-
-        if (onGrowthComplete && typeof onGrowthComplete === 'function') {
-          onGrowthComplete();
-        }
       }
 
       animationId = requestAnimationFrame(animate);
@@ -167,11 +211,13 @@ export function BirthdayTree({ onGrowthComplete }) {
       window.removeEventListener('resize', handleResize);
       cancelAnimationFrame(animationId);
     };
-  }, [onGrowthComplete]);
+  }, []); // Run animation loop ONCE on mount, NEVER reset on parent re-renders!
 
   return (
-    <div className="relative h-full w-full">
+    <div className="relative h-full w-full pointer-events-none">
       <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" />
     </div>
   );
 }
+
+export const BirthdayTree = React.memo(BirthdayTreeComponent);

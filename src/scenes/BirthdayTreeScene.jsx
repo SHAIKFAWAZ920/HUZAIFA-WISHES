@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BirthdayTree } from '../birthday-tree/BirthdayTree';
 import { FloatingHearts } from '../components/FloatingHearts';
@@ -6,11 +6,15 @@ import { FloatingHearts } from '../components/FloatingHearts';
 export function BirthdayTreeScene({ onNext, config }) {
   const [blossomed, setBlossomed] = useState(false);
 
+  const handleGrowthComplete = useCallback(() => {
+    setBlossomed(true);
+  }, []);
+
   useEffect(() => {
-    // Tree starts blossoming around 2.5s into the animation
+    // Tree starts blossoming around 2.6s into the animation
     const timer = setTimeout(() => {
       setBlossomed(true);
-    }, 2400);
+    }, 2600);
     return () => clearTimeout(timer);
   }, []);
 
@@ -31,7 +35,7 @@ export function BirthdayTreeScene({ onNext, config }) {
 
       {/* Growing Tree Component Container */}
       <div className="absolute inset-0 z-0">
-        <BirthdayTree onGrowthComplete={() => setBlossomed(true)} />
+        <BirthdayTree onGrowthComplete={handleGrowthComplete} />
       </div>
 
       {/* Overlay Text Content - Scoped to left side (48% width) */}
