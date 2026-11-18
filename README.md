@@ -92,7 +92,7 @@ All text content, recipient name, age, and messages can be customized in [`src/c
 ```javascript
 export const birthdayConfig = {
   name: "Sana",
-  age: 14,
+  age: 21,
   sender: "Umar",
   // ... customized text and letter contents
 };

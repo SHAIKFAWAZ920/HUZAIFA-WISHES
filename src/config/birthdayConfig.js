@@ -1,6 +1,6 @@
 export const birthdayConfig = {
   name: "Sana",
-  age: 14,
+  age: 21,
   sender: "Umar",
 
   audio: {
@@ -23,7 +23,7 @@ export const birthdayConfig = {
     topText: "it's officially your day",
     title: "Happy Birthday,",
     name: "Sana",
-    subtitle: "and just like that, you're turning 14 ✨",
+    subtitle: "and just like that, you're turning 21 ✨",
     tapInstruction: "tap anywhere to continue"
   },
 
